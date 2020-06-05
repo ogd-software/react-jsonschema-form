@@ -350,7 +350,8 @@ function SchemaFieldRender(props) {
     formContext: formContext,
     fields: fields,
     schema: schema,
-    uiSchema: uiSchema
+    uiSchema: uiSchema,
+    registry: registry
   };
   var _AnyOfField = registry.fields.AnyOfField;
   var _OneOfField = registry.fields.OneOfField;

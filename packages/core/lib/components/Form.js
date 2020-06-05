@@ -116,22 +116,27 @@ function (_Component) {
       }
 
       if (mustValidate) {
-        var _this$validate = _this.validate(newFormData),
-            errors = _this$validate.errors,
-            errorSchema = _this$validate.errorSchema;
+        var schemaValidation = _this.validate(newFormData);
+
+        var errors = schemaValidation.errors;
+        var errorSchema = schemaValidation.errorSchema;
+        var schemaValidationErrors = errors;
+        var schemaValidationErrorSchema = errorSchema;
 
         if (_this.props.extraErrors) {
-          errorSchema = mergeObjects(errorSchema, _this.props.extraErrors);
+          errorSchema = mergeObjects(errorSchema, _this.props.extraErrors, !!"concat arrays");
           errors = toErrorList(errorSchema);
         }
 
         state = {
           formData: newFormData,
           errors: errors,
-          errorSchema: errorSchema
+          errorSchema: errorSchema,
+          schemaValidationErrors: schemaValidationErrors,
+          schemaValidationErrorSchema: schemaValidationErrorSchema
         };
       } else if (!_this.props.noValidate && newErrorSchema) {
-        var _errorSchema = _this.props.extraErrors ? mergeObjects(newErrorSchema, _this.props.extraErrors) : newErrorSchema;
+        var _errorSchema = _this.props.extraErrors ? mergeObjects(newErrorSchema, _this.props.extraErrors, !!"concat arrays") : newErrorSchema;
 
         state = {
           formData: newFormData,
@@ -181,19 +186,24 @@ function (_Component) {
       }
 
       if (!_this.props.noValidate) {
-        var _this$validate2 = _this.validate(newFormData),
-            _errors = _this$validate2.errors,
-            _errorSchema2 = _this$validate2.errorSchema;
+        var schemaValidation = _this.validate(newFormData);
+
+        var _errors = schemaValidation.errors;
+        var _errorSchema2 = schemaValidation.errorSchema;
+        var schemaValidationErrors = _errors;
+        var schemaValidationErrorSchema = _errorSchema2;
 
         if (_Object$keys(_errors).length > 0) {
           if (_this.props.extraErrors) {
-            _errorSchema2 = mergeObjects(_errorSchema2, _this.props.extraErrors);
+            _errorSchema2 = mergeObjects(_errorSchema2, _this.props.extraErrors, !!"concat arrays");
             _errors = toErrorList(_errorSchema2);
           }
 
           _this.setState({
             errors: _errors,
-            errorSchema: _errorSchema2
+            errorSchema: _errorSchema2,
+            schemaValidationErrors: schemaValidationErrors,
+            schemaValidationErrorSchema: schemaValidationErrorSchema
           }, function () {
             if (_this.props.onError) {
               _this.props.onError(_errors);
@@ -259,7 +269,7 @@ function (_Component) {
       var schema = "schema" in props ? props.schema : this.props.schema;
       var uiSchema = "uiSchema" in props ? props.uiSchema : this.props.uiSchema;
       var edit = typeof inputFormData !== "undefined";
-      var liveValidate = props.liveValidate || this.props.liveValidate;
+      var liveValidate = "liveValidate" in props ? props.liveValidate : this.props.liveValidate;
       var mustValidate = edit && !props.noValidate && liveValidate;
       var rootSchema = schema;
       var formData = getDefaultFormState(schema, inputFormData, rootSchema);
@@ -267,20 +277,48 @@ function (_Component) {
       var customFormats = props.customFormats;
       var additionalMetaSchemas = props.additionalMetaSchemas;
 
-      var _ref = mustValidate ? this.validate(formData, schema, additionalMetaSchemas, customFormats) : {
-        errors: state.errors || [],
-        errorSchema: state.errorSchema || {}
-      },
-          errors = _ref.errors,
-          errorSchema = _ref.errorSchema;
+      var getCurrentErrors = function getCurrentErrors() {
+        if (props.noValidate) {
+          return {
+            errors: [],
+            errorSchema: {}
+          };
+        } else if (!props.liveValidate) {
+          return {
+            errors: state.schemaValidationErrors || [],
+            errorSchema: state.schemaValidationErrorSchema || {}
+          };
+        }
+
+        return {
+          errors: state.errors || [],
+          errorSchema: state.errorSchema || {}
+        };
+      };
+
+      var errors, errorSchema, schemaValidationErrors, schemaValidationErrorSchema;
+
+      if (mustValidate) {
+        var schemaValidation = this.validate(formData, schema, additionalMetaSchemas, customFormats);
+        errors = schemaValidation.errors;
+        errorSchema = schemaValidation.errorSchema;
+        schemaValidationErrors = errors;
+        schemaValidationErrorSchema = errorSchema;
+      } else {
+        var currentErrors = getCurrentErrors();
+        errors = currentErrors.errors;
+        errorSchema = currentErrors.errorSchema;
+        schemaValidationErrors = state.schemaValidationErrors;
+        schemaValidationErrorSchema = state.schemaValidationErrorSchema;
+      }
 
       if (props.extraErrors) {
-        errorSchema = mergeObjects(errorSchema, props.extraErrors);
+        errorSchema = mergeObjects(errorSchema, props.extraErrors, !!"concat arrays");
         errors = toErrorList(errorSchema);
       }
 
       var idSchema = toIdSchema(retrievedSchema, uiSchema["ui:rootFieldId"], rootSchema, formData, props.idPrefix);
-      return {
+      var nextState = {
         schema: schema,
         uiSchema: uiSchema,
         idSchema: idSchema,
@@ -290,6 +328,13 @@ function (_Component) {
         errorSchema: errorSchema,
         additionalMetaSchemas: additionalMetaSchemas
       };
+
+      if (schemaValidationErrors) {
+        nextState.schemaValidationErrors = schemaValidationErrors;
+        nextState.schemaValidationErrorSchema = schemaValidationErrorSchema;
+      }
+
+      return nextState;
     }
   }, {
     key: "shouldComponentUpdate",
