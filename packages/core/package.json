@@ -42,7 +42,7 @@
     "react": ">=16"
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.9.6",
+    "@babel/runtime-corejs3": "^7.10.2",
     "@types/json-schema": "^7.0.4",
     "ajv": "^6.7.0",
     "core-js": "^3.6.5",
