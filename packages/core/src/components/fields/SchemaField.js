@@ -1,20 +1,18 @@
-import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
 import * as types from "../../types";
 
 import {
-  isMultiSelect,
+  ADDITIONAL_PROPERTY_FLAG,
   isSelect,
   retrieveSchema,
   toIdSchema,
   getDefaultRegistry,
   mergeObjects,
-  getUiOptions,
-  isFilesArray,
   deepEquals,
   getSchemaType,
+  getDisplayLabel,
 } from "../../utils";
 
 const REQUIRED_FIELD_SYMBOL = "*";
@@ -261,22 +259,7 @@ function SchemaFieldRender(props) {
     return null;
   }
 
-  const uiOptions = getUiOptions(uiSchema);
-  let { label: displayLabel = true } = uiOptions;
-  if (schema.type === "array") {
-    displayLabel =
-      isMultiSelect(schema, rootSchema) ||
-      isFilesArray(schema, uiSchema, rootSchema);
-  }
-  if (schema.type === "object") {
-    displayLabel = false;
-  }
-  if (schema.type === "boolean" && !uiSchema["ui:widget"]) {
-    displayLabel = false;
-  }
-  if (uiSchema["ui:field"]) {
-    displayLabel = false;
-  }
+  const displayLabel = getDisplayLabel(schema, uiSchema, rootSchema);
 
   const { __errors, ...fieldErrorSchema } = errorSchema;
 
@@ -296,7 +279,6 @@ function SchemaFieldRender(props) {
     />
   );
 
-  const { type } = schema;
   const id = idSchema.$id;
 
   // If this schema has a title defined, but the user has set a new key/label, retain their input.
@@ -317,7 +299,7 @@ function SchemaFieldRender(props) {
   const classNames = [
     "form-group",
     "field",
-    `field-${type}`,
+    `field-${schema.type}`,
     errors && errors.length > 0 ? "field-error has-error has-danger" : "",
     uiSchema.classNames,
   ]
