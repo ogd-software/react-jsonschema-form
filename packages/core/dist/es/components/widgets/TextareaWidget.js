@@ -22,7 +22,7 @@ function TextareaWidget(props) {
   return React.createElement("textarea", {
     id: id,
     className: "form-control",
-    value: typeof value === "undefined" ? "" : value,
+    value: value ? value : "",
     placeholder: placeholder,
     required: required,
     disabled: disabled,

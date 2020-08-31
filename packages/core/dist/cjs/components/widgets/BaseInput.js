@@ -41,10 +41,11 @@ function BaseInput(props) {
       onFocus = props.onFocus,
       options = props.options,
       schema = props.schema,
+      uiSchema = props.uiSchema,
       formContext = props.formContext,
       registry = props.registry,
       rawErrors = props.rawErrors,
-      inputProps = _objectWithoutProperties(props, ["value", "readonly", "disabled", "autofocus", "onBlur", "onFocus", "options", "schema", "formContext", "registry", "rawErrors"]); // If options.inputType is set use that as the input type
+      inputProps = _objectWithoutProperties(props, ["value", "readonly", "disabled", "autofocus", "onBlur", "onFocus", "options", "schema", "uiSchema", "formContext", "registry", "rawErrors"]); // If options.inputType is set use that as the input type
 
 
   if (options.inputType) {

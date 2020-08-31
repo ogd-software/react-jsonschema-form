@@ -44,6 +44,7 @@ function StringField(props) {
       enumOptions: enumOptions
     }),
     schema: schema,
+    uiSchema: uiSchema,
     id: idSchema && idSchema.$id,
     label: title === undefined ? name : title,
     value: formData,

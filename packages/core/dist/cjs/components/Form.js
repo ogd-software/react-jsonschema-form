@@ -84,8 +84,13 @@ function (_Component) {
           if (_typeof(_obj[key]) === "object") {
             var newPaths = paths.map(function (path) {
               return "".concat(path, ".").concat(key);
-            });
-            getAllPaths(_obj[key], acc, newPaths);
+            }); // If an object is marked with additionalProperties, all its keys are valid
+
+            if (_obj[key].__rjsf_additionalProperties && _obj[key].$name !== "") {
+              acc.push(_obj[key].$name);
+            } else {
+              getAllPaths(_obj[key], acc, newPaths);
+            }
           } else if (key === "$name" && _obj[key] !== "") {
             paths.forEach(function (path) {
               path = path.replace(/^\./, "");
@@ -160,7 +165,7 @@ function (_Component) {
       }
 
       _this.setState(state, function () {
-        return _this.props.onChange && _this.props.onChange(state);
+        return _this.props.onChange && _this.props.onChange(_this.state);
       });
     });
 

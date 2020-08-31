@@ -5,8 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _utils = require("../../utils");
-
 var _IconButton = _interopRequireDefault(require("../IconButton"));
 
 var _react = _interopRequireDefault(require("react"));
@@ -14,6 +12,8 @@ var _react = _interopRequireDefault(require("react"));
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
 var types = _interopRequireWildcard(require("../../types"));
+
+var _utils = require("../../utils");
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = Object.defineProperty && Object.getOwnPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : {}; if (desc.get || desc.set) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } } newObj["default"] = obj; return newObj; } }
 
@@ -294,25 +294,7 @@ function SchemaFieldRender(props) {
     return null;
   }
 
-  var uiOptions = (0, _utils.getUiOptions)(uiSchema);
-  var _uiOptions$label = uiOptions.label,
-      displayLabel = _uiOptions$label === void 0 ? true : _uiOptions$label;
-
-  if (schema.type === "array") {
-    displayLabel = (0, _utils.isMultiSelect)(schema, rootSchema) || (0, _utils.isFilesArray)(schema, uiSchema, rootSchema);
-  }
-
-  if (schema.type === "object") {
-    displayLabel = false;
-  }
-
-  if (schema.type === "boolean" && !uiSchema["ui:widget"]) {
-    displayLabel = false;
-  }
-
-  if (uiSchema["ui:field"]) {
-    displayLabel = false;
-  }
+  var displayLabel = (0, _utils.getDisplayLabel)(schema, uiSchema, rootSchema);
 
   var __errors = errorSchema.__errors,
       fieldErrorSchema = _objectWithoutProperties(errorSchema, ["__errors"]); // See #439: uiSchema: Don't pass consumed class names to child components
@@ -332,7 +314,6 @@ function SchemaFieldRender(props) {
     rawErrors: __errors
   }));
 
-  var type = schema.type;
   var id = idSchema.$id; // If this schema has a title defined, but the user has set a new key/label, retain their input.
 
   var label;
@@ -347,7 +328,7 @@ function SchemaFieldRender(props) {
   var errors = __errors;
   var help = uiSchema["ui:help"];
   var hidden = uiSchema["ui:widget"] === "hidden";
-  var classNames = ["form-group", "field", "field-".concat(type), errors && errors.length > 0 ? "field-error has-error has-danger" : "", uiSchema.classNames].join(" ").trim();
+  var classNames = ["form-group", "field", "field-".concat(schema.type), errors && errors.length > 0 ? "field-error has-error has-danger" : "", uiSchema.classNames].join(" ").trim();
   var fieldProps = {
     description: _react["default"].createElement(DescriptionField, {
       id: id + "__description",

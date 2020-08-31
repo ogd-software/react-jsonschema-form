@@ -66,9 +66,14 @@ function (_Component) {
               var _context3;
 
               return _concatInstanceProperty(_context3 = "".concat(path, ".")).call(_context3, key);
-            });
+            }); // If an object is marked with additionalProperties, all its keys are valid
 
-            getAllPaths(_obj[key], acc, newPaths);
+
+            if (_obj[key].__rjsf_additionalProperties && _obj[key].$name !== "") {
+              acc.push(_obj[key].$name);
+            } else {
+              getAllPaths(_obj[key], acc, newPaths);
+            }
           } else if (key === "$name" && _obj[key] !== "") {
             _forEachInstanceProperty(paths).call(paths, function (path) {
               path = path.replace(/^\./, "");
@@ -146,7 +151,7 @@ function (_Component) {
       }
 
       _this.setState(state, function () {
-        return _this.props.onChange && _this.props.onChange(state);
+        return _this.props.onChange && _this.props.onChange(_this.state);
       });
     });
 

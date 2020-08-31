@@ -9,36 +9,9 @@ var _react = _interopRequireDefault(require("react"));
 
 var _propTypes = _interopRequireDefault(require("prop-types"));
 
+var _utils = require("../../utils");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-// Check to see if a schema specifies that a value must be true
-function schemaRequiresTrueValue(schema) {
-  // Check if const is a truthy value
-  if (schema["const"]) {
-    return true;
-  } // Check if an enum has a single value of true
-
-
-  if (schema["enum"] && schema["enum"].length === 1 && schema["enum"][0] === true) {
-    return true;
-  } // If anyOf has a single value, evaluate the subschema
-
-
-  if (schema.anyOf && schema.anyOf.length === 1) {
-    return schemaRequiresTrueValue(schema.anyOf[0]);
-  } // If oneOf has a single value, evaluate the subschema
-
-
-  if (schema.oneOf && schema.oneOf.length === 1) {
-    return schemaRequiresTrueValue(schema.oneOf[0]);
-  } // Evaluate each subschema in allOf, to see if one of them requires a true
-  // value
-
-
-  if (schema.allOf) {
-    return schema.allOf.some(schemaRequiresTrueValue);
-  }
-}
 
 function CheckboxWidget(props) {
   var schema = props.schema,
@@ -55,7 +28,7 @@ function CheckboxWidget(props) {
   // the "required" attribute if the field value must be "true", due to the
   // "const" or "enum" keywords
 
-  var required = schemaRequiresTrueValue(schema);
+  var required = (0, _utils.schemaRequiresTrueValue)(schema);
   return _react["default"].createElement("div", {
     className: "checkbox ".concat(disabled || readonly ? "disabled" : "")
   }, schema.description && _react["default"].createElement(DescriptionField, {

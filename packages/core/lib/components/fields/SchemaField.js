@@ -10,12 +10,11 @@ import _objectWithoutProperties from "@babel/runtime-corejs3/helpers/esm/objectW
 import _Object$keys from "@babel/runtime-corejs3/core-js-stable/object/keys";
 import _filterInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/filter";
 import _mapInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/map";
-import { ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 import IconButton from "../IconButton";
 import React from "react";
 import PropTypes from "prop-types";
 import * as types from "../../types";
-import { isMultiSelect, isSelect, retrieveSchema, toIdSchema, getDefaultRegistry, mergeObjects, getUiOptions, isFilesArray, deepEquals, getSchemaType } from "../../utils";
+import { ADDITIONAL_PROPERTY_FLAG, isSelect, retrieveSchema, toIdSchema, getDefaultRegistry, mergeObjects, deepEquals, getSchemaType, getDisplayLabel } from "../../utils";
 var REQUIRED_FIELD_SYMBOL = "*";
 var COMPONENT_TYPES = {
   array: "ArrayField",
@@ -267,25 +266,7 @@ function SchemaFieldRender(props) {
     return null;
   }
 
-  var uiOptions = getUiOptions(uiSchema);
-  var _uiOptions$label = uiOptions.label,
-      displayLabel = _uiOptions$label === void 0 ? true : _uiOptions$label;
-
-  if (schema.type === "array") {
-    displayLabel = isMultiSelect(schema, rootSchema) || isFilesArray(schema, uiSchema, rootSchema);
-  }
-
-  if (schema.type === "object") {
-    displayLabel = false;
-  }
-
-  if (schema.type === "boolean" && !uiSchema["ui:widget"]) {
-    displayLabel = false;
-  }
-
-  if (uiSchema["ui:field"]) {
-    displayLabel = false;
-  }
+  var displayLabel = getDisplayLabel(schema, uiSchema, rootSchema);
 
   var __errors = errorSchema.__errors,
       fieldErrorSchema = _objectWithoutProperties(errorSchema, ["__errors"]); // See #439: uiSchema: Don't pass consumed class names to child components
@@ -304,7 +285,6 @@ function SchemaFieldRender(props) {
     formContext: formContext,
     rawErrors: __errors
   }));
-  var type = schema.type;
   var id = idSchema.$id; // If this schema has a title defined, but the user has set a new key/label, retain their input.
 
   var label;
@@ -320,7 +300,7 @@ function SchemaFieldRender(props) {
   var help = uiSchema["ui:help"];
   var hidden = uiSchema["ui:widget"] === "hidden";
 
-  var classNames = _trimInstanceProperty(_context2 = ["form-group", "field", "field-".concat(type), errors && errors.length > 0 ? "field-error has-error has-danger" : "", uiSchema.classNames].join(" ")).call(_context2);
+  var classNames = _trimInstanceProperty(_context2 = ["form-group", "field", "field-".concat(schema.type), errors && errors.length > 0 ? "field-error has-error has-danger" : "", uiSchema.classNames].join(" ")).call(_context2);
 
   var fieldProps = {
     description: React.createElement(DescriptionField, {

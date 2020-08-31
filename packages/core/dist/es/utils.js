@@ -1,4 +1,5 @@
 import _Symbol$toPrimitive from "@babel/runtime-corejs3/core-js-stable/symbol/to-primitive";
+import _someInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/some";
 import _sortInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/sort";
 import _sliceInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/slice";
 import _Set from "@babel/runtime-corejs3/core-js-stable/set";
@@ -12,7 +13,6 @@ import _Number$isNaN from "@babel/runtime-corejs3/core-js-stable/number/is-nan";
 import _defineProperty from "@babel/runtime-corejs3/helpers/esm/defineProperty";
 import _indexOfInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/index-of";
 import _filterInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/filter";
-import _Object$keys from "@babel/runtime-corejs3/core-js-stable/object/keys";
 import _reduceInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/reduce";
 import _Array$isArray from "@babel/runtime-corejs3/core-js-stable/array/is-array";
 import _mapInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/map";
@@ -24,6 +24,7 @@ import _objectSpread from "@babel/runtime-corejs3/helpers/esm/objectSpread";
 import _objectWithoutProperties from "@babel/runtime-corejs3/helpers/esm/objectWithoutProperties";
 import _findInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/find";
 import _includesInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/includes";
+import _Object$keys from "@babel/runtime-corejs3/core-js-stable/object/keys";
 
 function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
 
@@ -88,6 +89,26 @@ var widgetMap = {
     hidden: "HiddenWidget"
   }
 };
+export function canExpand(schema, uiSchema, formData) {
+  if (!schema.additionalProperties) {
+    return false;
+  }
+
+  var _getUiOptions = getUiOptions(uiSchema),
+      expandable = _getUiOptions.expandable;
+
+  if (expandable === false) {
+    return expandable;
+  } // if ui:options.expandable was not explicitly set to false, we can add
+  // another property if we have not exceeded maxProperties yet
+
+
+  if (schema.maxProperties !== undefined) {
+    return _Object$keys(formData).length < schema.maxProperties;
+  }
+
+  return true;
+}
 export function getDefaultRegistry() {
   return {
     fields: require("./components/fields")["default"],
@@ -366,6 +387,29 @@ export function getUiOptions(uiSchema) {
 
     return _objectSpread({}, options, _defineProperty({}, key.substring(3), value));
   }, {});
+}
+export function getDisplayLabel(schema, uiSchema, rootSchema) {
+  var uiOptions = getUiOptions(uiSchema);
+  var _uiOptions$label = uiOptions.label,
+      displayLabel = _uiOptions$label === void 0 ? true : _uiOptions$label;
+
+  if (schema.type === "array") {
+    displayLabel = isMultiSelect(schema, rootSchema) || isFilesArray(schema, uiSchema, rootSchema);
+  }
+
+  if (schema.type === "object") {
+    displayLabel = false;
+  }
+
+  if (schema.type === "boolean" && !uiSchema["ui:widget"]) {
+    displayLabel = false;
+  }
+
+  if (uiSchema["ui:field"]) {
+    displayLabel = false;
+  }
+
+  return displayLabel;
 }
 export function isObject(thing) {
   if (typeof File !== "undefined" && thing instanceof File) {
@@ -885,7 +929,7 @@ export function deepEquals(a, b) {
     return true;
   } else if (typeof a === "function" || typeof b === "function") {
     // Assume all functions are equivalent
-    // see https://github.com/mozilla-services/react-jsonschema-form/issues/255
+    // see https://github.com/rjsf-team/react-jsonschema-form/issues/255
     return true;
   } else if (_typeof(a) !== "object" || _typeof(b) !== "object") {
     return false;
@@ -1007,6 +1051,10 @@ export function toPathSchema(schema) {
     return toPathSchema(_schema, name, rootSchema, formData);
   }
 
+  if (schema.hasOwnProperty("additionalProperties")) {
+    pathSchema.__rjsf_additionalProperties = true;
+  }
+
   if (schema.hasOwnProperty("items") && _Array$isArray(formData)) {
     _forEachInstanceProperty(formData).call(formData, function (element, i) {
       var _context19;
@@ -1069,6 +1117,33 @@ export function toDateString(_ref2) {
   var utcTime = Date.UTC(year, month - 1, day, hour, minute, second);
   var datetime = new Date(utcTime).toJSON();
   return time ? datetime : _sliceInstanceProperty(datetime).call(datetime, 0, 10);
+}
+export function utcToLocal(jsonDate) {
+  var _context21, _context22, _context23, _context24, _context25, _context26;
+
+  if (!jsonDate) {
+    return "";
+  } // required format of `"yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS"
+  // https://html.spec.whatwg.org/multipage/input.html#local-date-and-time-state-(type%3Ddatetime-local)
+  // > should be a _valid local date and time string_ (not GMT)
+  // Note - date constructor passed local ISO-8601 does not correctly
+  // change time to UTC in node pre-8
+
+
+  var date = new Date(jsonDate);
+  var yyyy = pad(date.getFullYear(), 4);
+  var MM = pad(date.getMonth() + 1, 2);
+  var dd = pad(date.getDate(), 2);
+  var hh = pad(date.getHours(), 2);
+  var mm = pad(date.getMinutes(), 2);
+  var ss = pad(date.getSeconds(), 2);
+  var SSS = pad(date.getMilliseconds(), 3);
+  return _concatInstanceProperty(_context21 = _concatInstanceProperty(_context22 = _concatInstanceProperty(_context23 = _concatInstanceProperty(_context24 = _concatInstanceProperty(_context25 = _concatInstanceProperty(_context26 = "".concat(yyyy, "-")).call(_context26, MM, "-")).call(_context25, dd, "T")).call(_context24, hh, ":")).call(_context23, mm, ":")).call(_context22, ss, ".")).call(_context21, SSS);
+}
+export function localToUTC(dateString) {
+  if (dateString) {
+    return new Date(dateString).toJSON();
+  }
 }
 export function pad(num, size) {
   var s = String(num);
@@ -1147,12 +1222,12 @@ export function getMatchingOption(formData, options, rootSchema) {
     // object and pass validation.
 
     if (option.properties) {
-      var _context21;
+      var _context27;
 
       // Create an "anyOf" schema that requires at least one of the keys in the
       // "properties" object
       var requiresAnyOf = {
-        anyOf: _mapInstanceProperty(_context21 = _Object$keys(option.properties)).call(_context21, function (key) {
+        anyOf: _mapInstanceProperty(_context27 = _Object$keys(option.properties)).call(_context27, function (key) {
           return {
             required: [key]
           };
@@ -1167,10 +1242,10 @@ export function getMatchingOption(formData, options, rootSchema) {
         if (!shallowClone.allOf) {
           shallowClone.allOf = [];
         } else {
-          var _context22;
+          var _context28;
 
           // If "allOf" already exists, shallow clone the array
-          shallowClone.allOf = _sliceInstanceProperty(_context22 = shallowClone.allOf).call(_context22);
+          shallowClone.allOf = _sliceInstanceProperty(_context28 = shallowClone.allOf).call(_context28);
         }
 
         shallowClone.allOf.push(requiresAnyOf);
@@ -1192,4 +1267,36 @@ export function getMatchingOption(formData, options, rootSchema) {
   }
 
   return 0;
+} // Check to see if a schema specifies that a value must be true
+
+export function schemaRequiresTrueValue(schema) {
+  // Check if const is a truthy value
+  if (schema["const"]) {
+    return true;
+  } // Check if an enum has a single value of true
+
+
+  if (schema["enum"] && schema["enum"].length === 1 && schema["enum"][0] === true) {
+    return true;
+  } // If anyOf has a single value, evaluate the subschema
+
+
+  if (schema.anyOf && schema.anyOf.length === 1) {
+    return schemaRequiresTrueValue(schema.anyOf[0]);
+  } // If oneOf has a single value, evaluate the subschema
+
+
+  if (schema.oneOf && schema.oneOf.length === 1) {
+    return schemaRequiresTrueValue(schema.oneOf[0]);
+  } // Evaluate each subschema in allOf, to see if one of them requires a true
+  // value
+
+
+  if (schema.allOf) {
+    var _context29;
+
+    return _someInstanceProperty(_context29 = schema.allOf).call(_context29, schemaRequiresTrueValue);
+  }
+
+  return false;
 }

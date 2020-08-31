@@ -50,31 +50,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 function DefaultObjectFieldTemplate(props) {
-  var canExpand = function canExpand() {
-    var formData = props.formData,
-        schema = props.schema,
-        uiSchema = props.uiSchema;
-
-    if (!schema.additionalProperties) {
-      return false;
-    }
-
-    var _getUiOptions = (0, _utils.getUiOptions)(uiSchema),
-        expandable = _getUiOptions.expandable;
-
-    if (expandable === false) {
-      return expandable;
-    } // if ui:options.expandable was not explicitly set to false, we can add
-    // another property if we have not exceeded maxProperties yet
-
-
-    if (schema.maxProperties !== undefined) {
-      return Object.keys(formData).length < schema.maxProperties;
-    }
-
-    return true;
-  };
-
   var TitleField = props.TitleField,
       DescriptionField = props.DescriptionField;
   return _react["default"].createElement("fieldset", {
@@ -90,7 +65,7 @@ function DefaultObjectFieldTemplate(props) {
     formContext: props.formContext
   }), props.properties.map(function (prop) {
     return prop.content;
-  }), canExpand() && _react["default"].createElement(_AddButton["default"], {
+  }), (0, _utils.canExpand)(props.schema, props.uiSchema, props.formData) && _react["default"].createElement(_AddButton["default"], {
     className: "object-property-expand",
     onClick: props.onAddClick(props.schema),
     disabled: props.disabled || props.readonly
@@ -274,16 +249,8 @@ function (_Component) {
       var SchemaField = fields.SchemaField,
           TitleField = fields.TitleField,
           DescriptionField = fields.DescriptionField;
-      var schema = (0, _utils.retrieveSchema)(this.props.schema, rootSchema, formData); // If this schema has a title defined, but the user has set a new key/label, retain their input.
-
-      var title;
-
-      if (this.state.wasPropertyKeyModified) {
-        title = name;
-      } else {
-        title = schema.title === undefined ? name : schema.title;
-      }
-
+      var schema = (0, _utils.retrieveSchema)(this.props.schema, rootSchema, formData);
+      var title = schema.title === undefined ? name : schema.title;
       var description = uiSchema["ui:description"] || schema.description;
       var orderedProperties;
 

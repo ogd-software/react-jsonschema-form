@@ -3,6 +3,7 @@ import _indexOfInstanceProperty from "@babel/runtime-corejs3/core-js-stable/inst
 import _Array$isArray from "@babel/runtime-corejs3/core-js-stable/array/is-array";
 import _toConsumableArray from "@babel/runtime-corejs3/helpers/esm/toConsumableArray";
 import _extends from "@babel/runtime-corejs3/helpers/esm/extends";
+import _Object$keys from "@babel/runtime-corejs3/core-js-stable/object/keys";
 import _objectSpread from "@babel/runtime-corejs3/helpers/esm/objectSpread";
 import _concatInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/concat";
 import _classCallCheck from "@babel/runtime-corejs3/helpers/esm/classCallCheck";
@@ -13,39 +14,13 @@ import _assertThisInitialized from "@babel/runtime-corejs3/helpers/esm/assertThi
 import _inherits from "@babel/runtime-corejs3/helpers/esm/inherits";
 import _defineProperty from "@babel/runtime-corejs3/helpers/esm/defineProperty";
 import _mapInstanceProperty from "@babel/runtime-corejs3/core-js-stable/instance/map";
-import _Object$keys from "@babel/runtime-corejs3/core-js-stable/object/keys";
 import AddButton from "../AddButton";
 import React, { Component } from "react";
 import * as types from "../../types";
-import { orderProperties, retrieveSchema, getDefaultRegistry, getUiOptions, ADDITIONAL_PROPERTY_FLAG } from "../../utils";
+import { orderProperties, retrieveSchema, getDefaultRegistry, canExpand, ADDITIONAL_PROPERTY_FLAG } from "../../utils";
 
 function DefaultObjectFieldTemplate(props) {
   var _context;
-
-  var canExpand = function canExpand() {
-    var formData = props.formData,
-        schema = props.schema,
-        uiSchema = props.uiSchema;
-
-    if (!schema.additionalProperties) {
-      return false;
-    }
-
-    var _getUiOptions = getUiOptions(uiSchema),
-        expandable = _getUiOptions.expandable;
-
-    if (expandable === false) {
-      return expandable;
-    } // if ui:options.expandable was not explicitly set to false, we can add
-    // another property if we have not exceeded maxProperties yet
-
-
-    if (schema.maxProperties !== undefined) {
-      return _Object$keys(formData).length < schema.maxProperties;
-    }
-
-    return true;
-  };
 
   var TitleField = props.TitleField,
       DescriptionField = props.DescriptionField;
@@ -62,7 +37,7 @@ function DefaultObjectFieldTemplate(props) {
     formContext: props.formContext
   }), _mapInstanceProperty(_context = props.properties).call(_context, function (prop) {
     return prop.content;
-  }), canExpand() && React.createElement(AddButton, {
+  }), canExpand(props.schema, props.uiSchema, props.formData) && React.createElement(AddButton, {
     className: "object-property-expand",
     onClick: props.onAddClick(props.schema),
     disabled: props.disabled || props.readonly
@@ -252,16 +227,8 @@ function (_Component) {
       var SchemaField = fields.SchemaField,
           TitleField = fields.TitleField,
           DescriptionField = fields.DescriptionField;
-      var schema = retrieveSchema(this.props.schema, rootSchema, formData); // If this schema has a title defined, but the user has set a new key/label, retain their input.
-
-      var title;
-
-      if (this.state.wasPropertyKeyModified) {
-        title = name;
-      } else {
-        title = schema.title === undefined ? name : schema.title;
-      }
-
+      var schema = retrieveSchema(this.props.schema, rootSchema, formData);
+      var title = schema.title === undefined ? name : schema.title;
       var description = uiSchema["ui:description"] || schema.description;
       var orderedProperties;
 
