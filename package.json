@@ -15,7 +15,7 @@
     "start": "lerna run start --stream --parallel"
   },
   "dependencies": {
-    "prettier": "^1.18.2",
+    "prettier": "^2.2.1",
     "lerna": "^3.18.3"
   },
   "prettier": {
